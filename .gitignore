@@ -1,0 +1,9 @@
+/target/
+/ai_env/
+__pycache__/
+*.py[cod]
+*.wav
+*.mp3
+*.flac
+*.ogg
+.DS_Store
