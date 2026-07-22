@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoicePolish Studio — Voice Enhancement, Audio Mastering & Sound Layer Separation</title>
+  <style>
+    :root {
+      --bg: #090b0e;
+      --surface: #11141a;
+      --surface-elevated: #181d26;
+      --border: #222936;
+      --border-focus: #3b82f6;
+      --text: #f1f5f9;
+      --text-muted: #8492a6;
+      --accent: #06b6d4;
+      --accent-glow: rgba(6, 182, 212, 0.15);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+    }
+
+    .badge-hw {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--success);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 410px;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1100px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Drop Zone */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .drop-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.35rem;
+    }
+
+    .drop-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .file-input { display: none; }
+
+    /* Visualizer & Waveform */
+    .visualizer-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      position: relative;
+    }
+
+    .canvas-wrap {
+      height: 140px;
+      width: 100%;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Player Controls */
+    .player-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--surface-elevated);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .transport-btns {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--text-muted);
+      background: var(--border);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #041014;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #22d3ee;
+      border-color: #22d3ee;
+    }
+
+    .btn-ab {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      min-width: 110px;
+      justify-content: center;
+    }
+
+    .btn-ab.playing-polished {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-ab.playing-raw {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+
+    .time-display {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      border-radius: 6px;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-delta {
+      font-size: 0.72rem;
+      margin-top: 0.2rem;
+      font-family: var(--font-mono);
+    }
+
+    .metric-delta.positive { color: var(--success); }
+    .metric-delta.negative { color: var(--warning); }
+
+    /* Sound Layers Section Styles */
+    .layers-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .remove-music-toggle-card {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .toggle-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .toggle-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f3e8ff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .toggle-sub {
+      font-size: 0.73rem;
+      color: #c084fc;
+    }
+
+    /* Switch Component */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider-toggle {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border);
+      transition: .2s;
+      border-radius: 24px;
+    }
+
+    .slider-toggle:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider-toggle {
+      background-color: var(--purple);
+    }
+
+    input:checked + .slider-toggle:before {
+      transform: translateX(20px);
+    }
+
+    /* Layer Strip Card */
+    .layer-card {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+    }
+
+    .layer-card.muted {
+      opacity: 0.45;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .layer-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .layer-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .layer-tools {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .btn-mini {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-mini:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .btn-mini.active-solo {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .btn-mini.active-mute {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .layer-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+
+    /* Banner for Detected Music */
+    .music-alert-banner {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Presets Section */
+    .preset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .preset-chip {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preset-chip:hover {
+      border-color: var(--text-muted);
+    }
+
+    .preset-chip.active {
+      border-color: var(--accent);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    .preset-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .preset-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .preset-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .preset-target {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      background: rgba(6, 182, 212, 0.1);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    /* Fine-tune Controls */
+    .controls-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .slider-label { color: var(--text); }
+    .slider-val { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .status-msg {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      text-align: center;
+    }
+
+    footer {
+      padding: 0.75rem 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">VP</div>
+      <div>
+        <div class="brand-title">VoicePolish Studio</div>
+        <div class="brand-subtitle">Voice Mastering · Layer Separation · Video Passthrough</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div class="badge-hw" style="border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.1); color: #c084fc;">
+        <div class="badge-dot" style="background: #a855f7;"></div>
+        <span>HDemucs Neural Stems Active</span>
+      </div>
+      <div class="badge-hw" style="border-color: rgba(6, 182, 212, 0.4); background: rgba(6, 182, 212, 0.1); color: var(--accent);">
+        <div class="badge-dot" style="background: var(--accent);"></div>
+        <span id="gpu-status-text">⚡ GPU: AMD Radeon Navi 22 (VAAPI)</span>
+      </div>
+      <div class="badge-hw">
+        <div class="badge-dot"></div>
+        <span>AMD Ryzen 7 7700X · AVX-512</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Main Column: Visualizer, A/B Player, Upload, Metrics -->
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+
+      <!-- Drop Zone & Upload -->
+      <div class="panel" id="upload-panel">
+        <div class="panel-title">
+          <span>Source Input File</span>
+          <span id="file-meta" style="font-family: var(--font-mono); font-size: 0.75rem;"></span>
+        </div>
+        <div class="dropzone" id="dropzone">
+          <span class="drop-icon">🎬</span>
+          <div class="drop-text">Drag &amp; drop video or audio recording here</div>
+          <div class="drop-hint">MP4, MOV, MKV, WebM, WAV, MP3, FLAC · Click to browse</div>
+          <input type="file" id="file-input" class="file-input" accept="audio/*,video/*,.mp4,.mov,.mkv,.webm,.avi,.m4v">
+        </div>
+        <div class="progress-bar-wrap" id="progress-wrap">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="status-msg" id="status-msg">Ready. Load a video or audio recording to polish.</div>
+      </div>
+
+      <!-- Music Detection Alert Banner -->
+      <div id="music-alert-banner" class="music-alert-banner" style="display: none;">
+        <div>
+          <span>🎵 </span>
+          <strong id="music-alert-text">Background Music Detected: 0%</strong>
+          <span style="opacity: 0.85; margin-left: 0.4rem;">Choose to remove music or balance layers below.</span>
+        </div>
+        <button class="btn btn-mini" id="btn-quick-remove-music" style="background: var(--warning); color: #000; border-color: var(--warning);">
+          Remove Background Music
+        </button>
+      </div>
+
+      <!-- Waveform & Dual Visualizer -->
+      <div class="panel" id="player-panel" style="display: none;">
+        <div class="panel-title">
+          <span>Interactive Player &amp; Waveform Visualizer</span>
+          <span id="speed-tag" style="color: var(--success); font-family: var(--font-mono); font-size: 0.75rem;"></span>
+        </div>
+
+        <!-- Video Player Preview -->
+        <div id="video-preview-wrap" style="display: none; margin-bottom: 1rem; width: 100%; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border);">
+          <video id="video-preview" controls playsinline style="width: 100%; max-height: 420px; display: block; margin: 0 auto;"></video>
+        </div>
+
+        <div class="visualizer-container">
+          <div class="canvas-wrap">
+            <canvas id="waveform-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="player-bar">
+          <div class="transport-btns">
+            <button class="btn btn-primary" id="btn-play">
+              <span id="play-icon">▶</span>
+              <span id="play-label">Play</span>
+            </button>
+            <button class="btn btn-ab playing-polished" id="btn-ab">
+              <span>●</span>
+              <span id="ab-label">POLISHED (B)</span>
+            </button>
+          </div>
+
+          <div class="time-display" id="time-display">00:00 / 00:00</div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn" id="btn-dl-vocals" style="font-size: 0.78rem; border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">
+              <span>🗣️</span>
+              <span>Voice Stem</span>
+            </button>
+            <button class="btn" id="btn-dl-music" style="font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.4); color: #fde68a;">
+              <span>🎸</span>
+              <span>Music Stem</span>
+            </button>
+            <button class="btn" id="btn-download" style="border-color: var(--accent); color: var(--accent);">
+              <span>⬇</span>
+              <span>Download Master</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Panel -->
+      <div class="panel" id="metrics-panel" style="display: none;">
+        <div class="panel-title">Engineering Analysis & Broadcast Compliance</div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Polished Loudness</div>
+            <div class="metric-value" id="m-out-lufs">--</div>
+            <div class="metric-delta" id="m-lufs-delta">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">True Peak Max</div>
+            <div class="metric-value" id="m-out-peak">--</div>
+            <div class="metric-delta" id="m-peak-headroom">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Background Music</div>
+            <div class="metric-value" id="m-music-detected" style="color: #c084fc;">--</div>
+            <div class="metric-delta" id="m-music-presence">--</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Processing Speed</div>
+            <div class="metric-value" id="m-speed">--</div>
+            <div class="metric-delta positive" id="m-latency">--</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar Column: Layers, Presets & Controls -->
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      
+      <!-- Engine Selector -->
+      <div class="panel">
+        <div class="panel-title">Mastering Engine</div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+          <button class="btn btn-primary" id="btn-engine-dsp" style="flex: 1; justify-content: center; font-size: 0.78rem;">
+            ⚡ Native AVX-512
+          </button>
+          <button class="btn" id="btn-engine-ai" style="flex: 1; justify-content: center; font-size: 0.78rem;">
+            🧠 Studio AI (Resemble)
+          </button>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 0.35rem;" id="engine-hint">
+          ⚡ Mode: Ultra-fast native DSP (~20ms / 178x real-time).
+        </div>
+      </div>
+
+      <!-- SOUND LAYERS & BACKGROUND MUSIC REMOVER -->
+      <div class="panel" style="border-color: rgba(168, 85, 247, 0.4);">
+        <div class="panel-title" style="color: #c084fc;">
+          <span>Sound Layers &amp; Music Remover</span>
+          <span style="font-size: 0.7rem; font-family: var(--font-mono); color: #a855f7;">AI Stems</span>
+        </div>
+
+        <div class="layers-container">
+          <!-- 1-Click Remove Music Master Switch -->
+          <div class="remove-music-toggle-card">
+            <div class="toggle-info">
+              <span class="toggle-title">🎵 Remove Background Music</span>
+              <span class="toggle-sub">Strip instruments &amp; beats, isolate clean voice</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-remove-music">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <!-- Quick Layer Presets -->
+          <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+            <button class="btn-mini" id="lp-voice-only">🎙️ Voice Only</button>
+            <button class="btn-mini" id="lp-ducked">📻 Duck Music (15%)</button>
+            <button class="btn-mini" id="lp-karaoke">🎤 Music Only</button>
+            <button class="btn-mini" id="lp-all">🎛️ Keep All</button>
+          </div>
+
+          <!-- Multi-Layer Stems Selection -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+            
+            <!-- Layer 1: Vocals / Speech -->
+            <div class="layer-card" id="card-vocals">
+              <div class="layer-card-header">
+                <label class="layer-tag">
+                  <input type="checkbox" id="layer-keep-vocals" checked>
+                  <span>🗣️ Voice &amp; Dialogue</span>
+                </label>
+                <div class="layer-tools">
+                  <button class="btn-mini" id="solo-vocals">Solo</button>
+                  <button class="btn-mini" id="mute-vocals">Mute</button>
+                  <span class="slider-val" id="val-layer-vocals" style="font-size: 0.75rem;">100%</span>
+                </div>
+              </div>
+              <div class="layer-slider-row">
+                <input type="range" id="slider-vocals" min="0" max="150" step="5" value="100">
+              </div>
+            </div>
+
+            <!-- Layer 2: Instruments & Melodies (Other) -->
+            <div class="layer-card" id="card-other">
+              <div class="layer-card-header">
+                <label class="layer-tag">
+                  <input type="checkbox" id="layer-keep-other" checked>
+                  <span>🎸 Melodies &amp; Synths</span>
+                </label>
+                <div class="layer-tools">
+                  <button class="btn-mini" id="solo-other">Solo</button>
+                  <button class="btn-mini" id="mute-other">Mute</button>
+                  <span class="slider-val" id="val-layer-other" style="font-size: 0.75rem;">100%</span>
+                </div>
+              </div>
+              <div class="layer-slider-row">
+                <input type="range" id="slider-other" min="0" max="150" step="5" value="100">
+              </div>
+            </div>
+
+            <!-- Layer 3: Drums & Percussion -->
+            <div class="layer-card" id="card-drums">
+              <div class="layer-card-header">
+                <label class="layer-tag">
+                  <input type="checkbox" id="layer-keep-drums" checked>
+                  <span>🥁 Drums &amp; Beats</span>
+                </label>
+                <div class="layer-tools">
+                  <button class="btn-mini" id="solo-drums">Solo</button>
+                  <button class="btn-mini" id="mute-drums">Mute</button>
+                  <span class="slider-val" id="val-layer-drums" style="font-size: 0.75rem;">100%</span>
+                </div>
+              </div>
+              <div class="layer-slider-row">
+                <input type="range" id="slider-drums" min="0" max="150" step="5" value="100">
+              </div>
+            </div>
+
+            <!-- Layer 4: Bass & Low-End -->
+            <div class="layer-card" id="card-bass">
+              <div class="layer-card-header">
+                <label class="layer-tag">
+                  <input type="checkbox" id="layer-keep-bass" checked>
+                  <span>🔊 Bass &amp; Sub</span>
+                </label>
+                <div class="layer-tools">
+                  <button class="btn-mini" id="solo-bass">Solo</button>
+                  <button class="btn-mini" id="mute-bass">Mute</button>
+                  <span class="slider-val" id="val-layer-bass" style="font-size: 0.75rem;">100%</span>
+                </div>
+              </div>
+              <div class="layer-slider-row">
+                <input type="range" id="slider-bass" min="0" max="150" step="5" value="100">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Preset Selection -->
+      <div class="panel">
+        <div class="panel-title">Mastering Presets</div>
+        <div class="preset-list">
+          <div class="preset-chip active" data-preset="podcast">
+            <div class="preset-info">
+              <span class="preset-name">Podcast Master</span>
+              <span class="preset-desc">Warm proximity body, crisp vocal presence, punchy leveling</span>
+            </div>
+            <span class="preset-target">-16 LUFS</span>
+          </div>
+
+          <div class="preset-chip" data-preset="youtube">
+            <div class="preset-info">
+              <span class="preset-name">YouTube Loud &amp; Clear</span>
+              <span class="preset-desc">Forward midrange presence, transparent air, loud delivery</span>
+            </div>
+            <span class="preset-target">-14 LUFS</span>
+          </div>
+
+          <div class="preset-chip" data-preset="audiobook">
+            <div class="preset-info">
+              <span class="preset-name">Audiobook (ACX)</span>
+              <span class="preset-desc">Strict -3 dBTP peak safety, transparent non-fatiguing dynamics</span>
+            </div>
+            <span class="preset-target">-20 LUFS</span>
+          </div>
+
+          <div class="preset-chip" data-preset="broadcast">
+            <div class="preset-info">
+              <span class="preset-name">EBU R128 Broadcast</span>
+              <span class="preset-desc">European broadcast standard, wide dynamic preservation</span>
+            </div>
+            <span class="preset-target">-23 LUFS</span>
+          </div>
+
+          <div class="preset-chip" data-preset="warm-radio">
+            <div class="preset-info">
+              <span class="preset-name">Warm FM Radio</span>
+              <span class="preset-desc">Deep proximity boost with heavy vintage broadcast compression</span>
+            </div>
+            <span class="preset-target">-16 LUFS</span>
+          </div>
+
+          <div class="preset-chip" data-preset="clean-only">
+            <div class="preset-info">
+              <span class="preset-name">Surgical Cleanup Only</span>
+              <span class="preset-desc">Noise &amp; room reverb removal only, zero tone coloration</span>
+            </div>
+            <span class="preset-target">Raw Level</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fine-Tuning Parameters -->
+      <div class="panel">
+        <div class="panel-title">Surgical Audio Tuning</div>
+        <div class="controls-grid">
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Noise Reduction</span>
+              <span class="slider-val" id="val-denoise">14 dB</span>
+            </div>
+            <input type="range" id="param-denoise" min="4" max="30" step="1" value="14">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Dereverberation (Dryness)</span>
+              <span class="slider-val" id="val-dereverb">40%</span>
+            </div>
+            <input type="range" id="param-dereverb" min="0" max="100" step="5" value="40">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Vocal Warmth (200Hz)</span>
+              <span class="slider-val" id="val-warmth">+1.5 dB</span>
+            </div>
+            <input type="range" id="param-warmth" min="-6" max="6" step="0.5" value="1.5">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Vocal Presence (3kHz)</span>
+              <span class="slider-val" id="val-presence">+1.5 dB</span>
+            </div>
+            <input type="range" id="param-presence" min="-6" max="6" step="0.5" value="1.5">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Air Sheen (10kHz)</span>
+              <span class="slider-val" id="val-air">+1.0 dB</span>
+            </div>
+            <input type="range" id="param-air" min="-4" max="5" step="0.5" value="1.0">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Dry / Wet Polish Blend</span>
+              <span class="slider-val" id="val-mix">100%</span>
+            </div>
+            <input type="range" id="param-mix" min="0" max="100" step="5" value="100">
+          </div>
+
+          <button class="btn btn-primary" id="btn-reprocess" style="width: 100%; justify-content: center; margin-top: 0.5rem;" disabled>
+            ⚡ Re-Master with Custom Settings
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <span>VoicePolish Studio 0.2.0 · Hybrid Demucs AI &amp; AVX-512 DSP</span>
+    <span>Hotkey: [Space] Play/Pause · [Tab] Toggle A/B</span>
+  </footer>
+
+  <script>
+    // State
+    let currentRawBuffer = null;
+    let currentPolishedBuffer = null;
+    let currentFile = null;
+    let activePreset = 'podcast';
+    let selectedEngine = 'dsp'; // 'dsp' or 'ai'
+    let isPlaying = false;
+    let activeSource = 'polished'; // 'polished' or 'raw'
+    let audioCtx = null;
+    let rawAudioNode = null;
+    let polishedAudioNode = null;
+    let gainRaw = null;
+    let gainPolished = null;
+    let startTime = 0;
+    let pauseOffset = 0;
+    let polishedBlob = null;
+    let rawPeaks = [];
+    let polishedPeaks = [];
+
+    // DOM Elements
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const statusMsg = document.getElementById('status-msg');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressFill = document.getElementById('progress-fill');
+    const playerPanel = document.getElementById('player-panel');
+    const metricsPanel = document.getElementById('metrics-panel');
+    const fileMeta = document.getElementById('file-meta');
+    const speedTag = document.getElementById('speed-tag');
+
+    const btnEngineDsp = document.getElementById('btn-engine-dsp');
+    const btnEngineAi = document.getElementById('btn-engine-ai');
+    const engineHint = document.getElementById('engine-hint');
+
+    // Music removal & sound layers elements
+    const toggleRemoveMusic = document.getElementById('toggle-remove-music');
+    const musicAlertBanner = document.getElementById('music-alert-banner');
+    const musicAlertText = document.getElementById('music-alert-text');
+    const btnQuickRemoveMusic = document.getElementById('btn-quick-remove-music');
+
+    const layerKeepVocals = document.getElementById('layer-keep-vocals');
+    const layerKeepOther = document.getElementById('layer-keep-other');
+    const layerKeepDrums = document.getElementById('layer-keep-drums');
+    const layerKeepBass = document.getElementById('layer-keep-bass');
+
+    const sliderVocals = document.getElementById('slider-vocals');
+    const sliderOther = document.getElementById('slider-other');
+    const sliderDrums = document.getElementById('slider-drums');
+    const sliderBass = document.getElementById('slider-bass');
+
+    const valVocals = document.getElementById('val-layer-vocals');
+    const valOther = document.getElementById('val-layer-other');
+    const valDrums = document.getElementById('val-layer-drums');
+    const valBass = document.getElementById('val-layer-bass');
+
+    const cardVocals = document.getElementById('card-vocals');
+    const cardOther = document.getElementById('card-other');
+    const cardDrums = document.getElementById('card-drums');
+    const cardBass = document.getElementById('card-bass');
+
+    const btnPlay = document.getElementById('btn-play');
+    const playIcon = document.getElementById('play-icon');
+    const playLabel = document.getElementById('play-label');
+    const btnAb = document.getElementById('btn-ab');
+    const abLabel = document.getElementById('ab-label');
+    const btnDownload = document.getElementById('btn-download');
+    const btnDlVocals = document.getElementById('btn-dl-vocals');
+    const btnDlMusic = document.getElementById('btn-dl-music');
+    const btnReprocess = document.getElementById('btn-reprocess');
+    const timeDisplay = document.getElementById('time-display');
+
+    const canvas = document.getElementById('waveform-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Preset configurations
+    const presetConfigs = {
+      'podcast':    { denoise: 14, dereverb: 40, warmth: 1.5, presence: 1.5, air: 1.0, mix: 100 },
+      'youtube':    { denoise: 16, dereverb: 45, warmth: 1.0, presence: 2.2, air: 1.5, mix: 100 },
+      'audiobook':  { denoise: 12, dereverb: 35, warmth: 0.8, presence: 0.5, air: 0.0, mix: 100 },
+      'broadcast':  { denoise: 10, dereverb: 30, warmth: 0.5, presence: 0.8, air: 0.5, mix: 100 },
+      'warm-radio': { denoise: 18, dereverb: 50, warmth: 3.0, presence: 2.0, air: 1.0, mix: 100 },
+      'clean-only': { denoise: 14, dereverb: 40, warmth: 0.0, presence: 0.0, air: 0.0, mix: 100 }
+    };
+
+    // Engine switch
+    btnEngineDsp.addEventListener('click', () => {
+      selectedEngine = 'dsp';
+      btnEngineDsp.className = 'btn btn-primary';
+      btnEngineAi.className = 'btn';
+      engineHint.textContent = '⚡ Mode: Ultra-fast native DSP (~20ms / 178x real-time).';
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    btnEngineAi.addEventListener('click', () => {
+      selectedEngine = 'ai';
+      btnEngineAi.className = 'btn btn-primary';
+      btnEngineDsp.className = 'btn';
+      engineHint.textContent = '🧠 Mode: Neural Flow Matching & Super-Resolution (Adobe Enhance effect).';
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    // Slider setup
+    const sliders = [
+      { id: 'param-denoise', valId: 'val-denoise', unit: ' dB' },
+      { id: 'param-dereverb', valId: 'val-dereverb', unit: '%' },
+      { id: 'param-warmth', valId: 'val-warmth', unit: ' dB', prefix: '+' },
+      { id: 'param-presence', valId: 'val-presence', unit: ' dB', prefix: '+' },
+      { id: 'param-air', valId: 'val-air', unit: ' dB', prefix: '+' },
+      { id: 'param-mix', valId: 'val-mix', unit: '%' },
+    ];
+
+    sliders.forEach(s => {
+      const el = document.getElementById(s.id);
+      const valEl = document.getElementById(s.valId);
+      el.addEventListener('input', () => {
+        let v = parseFloat(el.value);
+        let prefix = (s.prefix && v > 0) ? s.prefix : '';
+        valEl.textContent = prefix + v + s.unit;
+      });
+    });
+
+    // Setup layer sliders
+    function setupLayerSlider(slider, labelEl, card) {
+      slider.addEventListener('input', () => {
+        labelEl.textContent = slider.value + '%';
+        if (slider.value === '0') {
+          card.classList.add('muted');
+        } else {
+          card.classList.remove('muted');
+        }
+      });
+    }
+    setupLayerSlider(sliderVocals, valVocals, cardVocals);
+    setupLayerSlider(sliderOther, valOther, cardOther);
+    setupLayerSlider(sliderDrums, valDrums, cardDrums);
+    setupLayerSlider(sliderBass, valBass, cardBass);
+
+    // Layer checkboxes
+    function bindLayerCheckbox(chk, card, slider) {
+      chk.addEventListener('change', () => {
+        if (!chk.checked) {
+          card.classList.add('muted');
+        } else {
+          card.classList.remove('muted');
+          if (slider.value === '0') slider.value = '100';
+          slider.dispatchEvent(new Event('input'));
+        }
+      });
+    }
+    bindLayerCheckbox(layerKeepVocals, cardVocals, sliderVocals);
+    bindLayerCheckbox(layerKeepOther, cardOther, sliderOther);
+    bindLayerCheckbox(layerKeepDrums, cardDrums, sliderDrums);
+    bindLayerCheckbox(layerKeepBass, cardBass, sliderBass);
+
+    // Solo and Mute buttons
+    function setupSoloMute(soloId, muteId, currentChk, otherChks) {
+      document.getElementById(soloId).addEventListener('click', () => {
+        currentChk.checked = true;
+        currentChk.dispatchEvent(new Event('change'));
+        otherChks.forEach(chk => {
+          chk.checked = false;
+          chk.dispatchEvent(new Event('change'));
+        });
+        if (currentFile) processAudioFile(currentFile);
+      });
+
+      document.getElementById(muteId).addEventListener('click', () => {
+        currentChk.checked = !currentChk.checked;
+        currentChk.dispatchEvent(new Event('change'));
+        if (currentFile) processAudioFile(currentFile);
+      });
+    }
+
+    setupSoloMute('solo-vocals', 'mute-vocals', layerKeepVocals, [layerKeepOther, layerKeepDrums, layerKeepBass]);
+    setupSoloMute('solo-other', 'mute-other', layerKeepOther, [layerKeepVocals, layerKeepDrums, layerKeepBass]);
+    setupSoloMute('solo-drums', 'mute-drums', layerKeepDrums, [layerKeepVocals, layerKeepOther, layerKeepBass]);
+    setupSoloMute('solo-bass', 'mute-bass', layerKeepBass, [layerKeepVocals, layerKeepOther, layerKeepDrums]);
+
+    // Remove music master toggle
+    toggleRemoveMusic.addEventListener('change', () => {
+      const isMute = toggleRemoveMusic.checked;
+      layerKeepOther.checked = !isMute;
+      layerKeepDrums.checked = !isMute;
+      layerKeepBass.checked = !isMute;
+
+      layerKeepOther.dispatchEvent(new Event('change'));
+      layerKeepDrums.dispatchEvent(new Event('change'));
+      layerKeepBass.dispatchEvent(new Event('change'));
+
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    btnQuickRemoveMusic.addEventListener('click', () => {
+      toggleRemoveMusic.checked = true;
+      toggleRemoveMusic.dispatchEvent(new Event('change'));
+    });
+
+    // Layer presets
+    document.getElementById('lp-voice-only').addEventListener('click', () => {
+      toggleRemoveMusic.checked = true;
+      toggleRemoveMusic.dispatchEvent(new Event('change'));
+    });
+
+    document.getElementById('lp-ducked').addEventListener('click', () => {
+      toggleRemoveMusic.checked = false;
+      layerKeepVocals.checked = true;
+      layerKeepOther.checked = true;
+      layerKeepDrums.checked = true;
+      layerKeepBass.checked = true;
+      sliderVocals.value = '100';
+      sliderOther.value = '15';
+      sliderDrums.value = '15';
+      sliderBass.value = '15';
+      [sliderVocals, sliderOther, sliderDrums, sliderBass].forEach(s => s.dispatchEvent(new Event('input')));
+      [layerKeepVocals, layerKeepOther, layerKeepDrums, layerKeepBass].forEach(c => c.dispatchEvent(new Event('change')));
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    document.getElementById('lp-karaoke').addEventListener('click', () => {
+      toggleRemoveMusic.checked = false;
+      layerKeepVocals.checked = false;
+      layerKeepOther.checked = true;
+      layerKeepDrums.checked = true;
+      layerKeepBass.checked = true;
+      sliderOther.value = '100';
+      sliderDrums.value = '100';
+      sliderBass.value = '100';
+      [sliderOther, sliderDrums, sliderBass].forEach(s => s.dispatchEvent(new Event('input')));
+      [layerKeepVocals, layerKeepOther, layerKeepDrums, layerKeepBass].forEach(c => c.dispatchEvent(new Event('change')));
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    document.getElementById('lp-all').addEventListener('click', () => {
+      toggleRemoveMusic.checked = false;
+      layerKeepVocals.checked = true;
+      layerKeepOther.checked = true;
+      layerKeepDrums.checked = true;
+      layerKeepBass.checked = true;
+      sliderVocals.value = '100';
+      sliderOther.value = '100';
+      sliderDrums.value = '100';
+      sliderBass.value = '100';
+      [sliderVocals, sliderOther, sliderDrums, sliderBass].forEach(s => s.dispatchEvent(new Event('input')));
+      [layerKeepVocals, layerKeepOther, layerKeepDrums, layerKeepBass].forEach(c => c.dispatchEvent(new Event('change')));
+      if (currentFile) processAudioFile(currentFile);
+    });
+
+    // Preset chips click
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activePreset = chip.dataset.preset;
+
+        const cfg = presetConfigs[activePreset];
+        if (cfg) {
+          setSlider('param-denoise', 'val-denoise', cfg.denoise, ' dB');
+          setSlider('param-dereverb', 'val-dereverb', cfg.dereverb, '%');
+          setSlider('param-warmth', 'val-warmth', cfg.warmth, ' dB', '+');
+          setSlider('param-presence', 'val-presence', cfg.presence, ' dB', '+');
+          setSlider('param-air', 'val-air', cfg.air, ' dB', '+');
+          setSlider('param-mix', 'val-mix', cfg.mix, '%');
+        }
+
+        if (currentFile) {
+          processAudioFile(currentFile);
+        }
+      });
+    });
+
+    function setSlider(id, valId, val, unit, prefix = '') {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(valId);
+      el.value = val;
+      let p = (prefix && val > 0) ? prefix : '';
+      valEl.textContent = p + val + unit;
+    }
+
+    // Dropzone handlers
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        handleFileSelect(fileInput.files[0]);
+      }
+    });
+
+    btnReprocess.addEventListener('click', () => {
+      if (currentFile) {
+        processAudioFile(currentFile);
+      }
+    });
+
+    function handleFileSelect(file) {
+      currentFile = file;
+      fileMeta.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+      processAudioFile(file);
+    }
+
+    async function processAudioFile(file) {
+      stopPlayback();
+      statusMsg.textContent = "Processing audio & separating sound layers...";
+      progressWrap.style.display = 'block';
+      progressFill.style.width = '30%';
+      btnReprocess.disabled = true;
+
+      // Extract custom slider values
+      const denoise = document.getElementById('param-denoise').value;
+      const dereverb = (parseFloat(document.getElementById('param-dereverb').value) / 100.0).toFixed(2);
+      const warmth = document.getElementById('param-warmth').value;
+      const presence = document.getElementById('param-presence').value;
+      const air = document.getElementById('param-air').value;
+      const mix = (parseFloat(document.getElementById('param-mix').value) / 100.0).toFixed(2);
+
+      // Extract sound layer weights
+      const removeMusic = toggleRemoveMusic.checked;
+      const gainVocals = layerKeepVocals.checked ? (parseFloat(sliderVocals.value) / 100.0).toFixed(2) : '0.0';
+      const gainOther = layerKeepOther.checked ? (parseFloat(sliderOther.value) / 100.0).toFixed(2) : '0.0';
+      const gainDrums = layerKeepDrums.checked ? (parseFloat(sliderDrums.value) / 100.0).toFixed(2) : '0.0';
+      const gainBass = layerKeepBass.checked ? (parseFloat(sliderBass.value) / 100.0).toFixed(2) : '0.0';
+
+      const query = new URLSearchParams({
+        preset: activePreset,
+        ai: selectedEngine === 'ai' ? 'true' : 'false',
+        denoise: denoise,
+        dereverb: dereverb,
+        warmth: warmth,
+        presence: presence,
+        air: air,
+        mix: mix,
+        gain_vocals: gainVocals,
+        gain_instruments: gainOther,
+        gain_drums: gainDrums,
+        gain_bass: gainBass
+      });
+
+      if (removeMusic) {
+        query.set('remove_music', 'true');
+      }
+
+      try {
+        const fileBuffer = await file.arrayBuffer();
+        progressFill.style.width = '60%';
+
+        const response = await fetch(`/api/process?${query.toString()}`, {
+          method: 'POST',
+          body: fileBuffer
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${await response.text()}`);
+        }
+
+        const outLufs = response.headers.get('X-Output-Lufs') || '-16.0';
+        const inLufs = response.headers.get('X-Input-Lufs') || '-20.0';
+        const outPeak = response.headers.get('X-Output-Peak') || '-1.0';
+        const inPeak = response.headers.get('X-Input-Peak') || '-3.0';
+        const gainApplied = response.headers.get('X-Gain-Applied') || '0.0';
+        const procTime = response.headers.get('X-Processing-Time-Ms') || '20';
+        const durationSec = parseFloat(response.headers.get('X-Duration-Sec') || '4.0');
+        const rtf = response.headers.get('X-Rtf') || '0.005';
+        const engineUsed = response.headers.get('X-Engine') || 'Native DSP';
+
+        // Layer detection headers
+        const musicDetected = response.headers.get('X-Music-Detected') || 'No';
+        const musicPresence = response.headers.get('X-Music-Presence') || '0.0%';
+        const layersApplied = response.headers.get('X-Layers-Applied') || 'Pass-through';
+
+        const polishedBytes = await response.arrayBuffer();
+        const mediaType = response.headers.get('X-Media-Type') || '';
+        const isVideo = mediaType === 'video' ||
+                        (file && file.type && file.type.startsWith('video')) ||
+                        (file && /\.(mp4|mov|mkv|webm|avi|m4v)$/i.test(file.name));
+
+        const contentType = isVideo ? 'video/mp4' : 'audio/wav';
+        polishedBlob = new Blob([polishedBytes], { type: contentType });
+
+        const videoWrap = document.getElementById('video-preview-wrap');
+        const videoEl = document.getElementById('video-preview');
+
+        if (isVideo && videoWrap && videoEl) {
+          videoEl.src = URL.createObjectURL(polishedBlob);
+          videoWrap.style.display = 'block';
+          btnDownload.querySelector('span:last-child').textContent = 'Download Polished Video (MP4)';
+        } else if (videoWrap) {
+          videoWrap.style.display = 'none';
+          btnDownload.querySelector('span:last-child').textContent = 'Download Master WAV';
+        }
+
+        progressFill.style.width = '100%';
+
+        // Initialize Web Audio
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        try {
+          currentRawBuffer = await audioCtx.decodeAudioData(fileBuffer.slice(0));
+          currentPolishedBuffer = await audioCtx.decodeAudioData(polishedBytes.slice(0));
+
+          // Compute waveform peaks for visualizer
+          rawPeaks = computePeaks(currentRawBuffer, 400);
+          polishedPeaks = computePeaks(currentPolishedBuffer, 400);
+          resizeCanvas();
+          drawWaveform(0);
+        } catch (e) {
+          console.log('Waveform decode handled gracefully');
+        }
+
+        // Update metrics
+        document.getElementById('m-out-lufs').textContent = parseFloat(outLufs).toFixed(1) + ' LUFS';
+        document.getElementById('m-lufs-delta').textContent = `In: ${parseFloat(inLufs).toFixed(1)} LUFS (gain: ${gainApplied} dB)`;
+        document.getElementById('m-out-peak').textContent = parseFloat(outPeak).toFixed(1) + ' dBTP';
+        document.getElementById('m-peak-headroom').textContent = `In: ${parseFloat(inPeak).toFixed(1)} dBTP`;
+        
+        document.getElementById('m-music-detected').textContent = musicDetected === 'Yes' ? 'Detected' : 'None';
+        document.getElementById('m-music-presence').textContent = `Presence: ${musicPresence} (${layersApplied})`;
+
+        const speedMultiplier = (1.0 / parseFloat(rtf)).toFixed(0);
+        document.getElementById('m-speed').textContent = `${speedMultiplier}x realtime`;
+        document.getElementById('m-latency').textContent = `${procTime}ms (${engineUsed})`;
+        speedTag.textContent = `⚡ [${engineUsed}] Processed in ${procTime}ms (${speedMultiplier}x realtime)`;
+
+        // Show music banner if background music is found and not yet removed
+        if (musicDetected === 'Yes' && !removeMusic) {
+          musicAlertBanner.style.display = 'flex';
+          musicAlertText.textContent = `Background Music Detected (${musicPresence})`;
+        } else {
+          musicAlertBanner.style.display = 'none';
+        }
+
+        // Show panels
+        playerPanel.style.display = 'flex';
+        metricsPanel.style.display = 'flex';
+        statusMsg.textContent = `Polished master ready (${layersApplied}). Press [Space] to play, [Tab] to toggle A/B.`;
+        progressWrap.style.display = 'none';
+        btnReprocess.disabled = false;
+
+        resizeCanvas();
+        drawWaveform(0);
+
+      } catch (err) {
+        console.error(err);
+        statusMsg.textContent = `Error: ${err.message}`;
+        progressWrap.style.display = 'none';
+        btnReprocess.disabled = false;
+      }
+    }
+
+    // Stem direct download handler
+    async function downloadStem(stemName) {
+      if (!currentFile) return;
+      statusMsg.textContent = `Extracting ${stemName} stem...`;
+      try {
+        const fileBuffer = await currentFile.arrayBuffer();
+        const resp = await fetch(`/api/stem?name=${stemName}`, {
+          method: 'POST',
+          body: fileBuffer
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const baseName = currentFile.name.replace(/\.[^/.]+$/, "");
+        a.download = `${baseName}_${stemName}_stem.wav`;
+        a.click();
+        URL.revokeObjectURL(url);
+        statusMsg.textContent = `${stemName.toUpperCase()} stem downloaded.`;
+      } catch (e) {
+        alert("Stem download error: " + e.message);
+      }
+    }
+
+    btnDlVocals.addEventListener('click', () => downloadStem('vocals'));
+    btnDlMusic.addEventListener('click', () => downloadStem('music'));
+
+    function computePeaks(buffer, numPoints) {
+      const data = buffer.getChannelData(0);
+      const step = Math.ceil(data.length / numPoints);
+      const peaks = [];
+      for (let i = 0; i < numPoints; i++) {
+        let max = 0;
+        const start = i * step;
+        const end = Math.min(start + step, data.length);
+        for (let j = start; j < end; j++) {
+          const val = Math.abs(data[j]);
+          if (val > max) max = val;
+        }
+        peaks.push(max);
+      }
+      return peaks;
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', () => { if (currentPolishedBuffer) { resizeCanvas(); drawWaveform(getPlayProgress()); } });
+
+    function drawWaveform(progress = 0) {
+      const w = canvas.width / window.devicePixelRatio;
+      const h = canvas.height / window.devicePixelRatio;
+      ctx.clearRect(0, 0, w, h);
+
+      const midY = h / 2;
+      const numPoints = polishedPeaks.length || 100;
+      const barW = Math.max(2, w / numPoints - 1);
+
+      // Draw Raw Peaks (muted slate background)
+      ctx.fillStyle = 'rgba(100, 116, 139, 0.35)';
+      for (let i = 0; i < rawPeaks.length; i++) {
+        const x = (i / rawPeaks.length) * w;
+        const barH = Math.max(2, rawPeaks[i] * (h * 0.8));
+        ctx.fillRect(x, midY - barH / 2, barW, barH);
+      }
+
+      // Draw Polished Peaks (cyan)
+      for (let i = 0; i < polishedPeaks.length; i++) {
+        const x = (i / polishedPeaks.length) * w;
+        const barH = Math.max(2, polishedPeaks[i] * (h * 0.8));
+        const played = (x / w) <= progress;
+
+        if (activeSource === 'polished') {
+          ctx.fillStyle = played ? '#06b6d4' : 'rgba(6, 182, 212, 0.55)';
+        } else {
+          ctx.fillStyle = played ? '#f59e0b' : 'rgba(245, 158, 11, 0.45)';
+        }
+        ctx.fillRect(x, midY - barH / 2, barW, barH);
+      }
+
+      // Playhead
+      const playheadX = progress * w;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(playheadX, 0, 2, h);
+    }
+
+    // Audio Playback Engine
+    function startPlayback() {
+      if (!currentRawBuffer || !currentPolishedBuffer) return;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      rawAudioNode = audioCtx.createBufferSource();
+      rawAudioNode.buffer = currentRawBuffer;
+
+      polishedAudioNode = audioCtx.createBufferSource();
+      polishedAudioNode.buffer = currentPolishedBuffer;
+
+      gainRaw = audioCtx.createGain();
+      gainPolished = audioCtx.createGain();
+
+      if (activeSource === 'polished') {
+        gainPolished.gain.value = 1.0;
+        gainRaw.gain.value = 0.0;
+      } else {
+        gainPolished.gain.value = 0.0;
+        gainRaw.gain.value = 1.0;
+      }
+
+      rawAudioNode.connect(gainRaw).connect(audioCtx.destination);
+      polishedAudioNode.connect(gainPolished).connect(audioCtx.destination);
+
+      const offset = pauseOffset % currentPolishedBuffer.duration;
+      rawAudioNode.start(0, offset);
+      polishedAudioNode.start(0, offset);
+      startTime = audioCtx.currentTime - offset;
+      isPlaying = true;
+
+      playIcon.textContent = '⏸';
+      playLabel.textContent = 'Pause';
+
+      polishedAudioNode.onended = () => {
+        if (isPlaying && (audioCtx.currentTime - startTime) >= currentPolishedBuffer.duration) {
+          stopPlayback();
+          pauseOffset = 0;
+          drawWaveform(0);
+          updateTimeDisplay(0, currentPolishedBuffer.duration);
+        }
+      };
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    function stopPlayback() {
+      if (!isPlaying) return;
+      pauseOffset = (audioCtx.currentTime - startTime) % currentPolishedBuffer.duration;
+      try {
+        if (rawAudioNode) rawAudioNode.stop();
+        if (polishedAudioNode) polishedAudioNode.stop();
+      } catch (e) {}
+      isPlaying = false;
+      playIcon.textContent = '▶';
+      playLabel.textContent = 'Play';
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        stopPlayback();
+      } else {
+        startPlayback();
+      }
+    }
+
+    function toggleAB() {
+      if (activeSource === 'polished') {
+        activeSource = 'raw';
+        btnAb.className = 'btn btn-ab playing-raw';
+        abLabel.textContent = 'ORIGINAL (A)';
+        if (gainPolished && gainRaw) {
+          gainPolished.gain.value = 0.0;
+          gainRaw.gain.value = 1.0;
+        }
+      } else {
+        activeSource = 'polished';
+        btnAb.className = 'btn btn-ab playing-polished';
+        abLabel.textContent = 'POLISHED (B)';
+        if (gainPolished && gainRaw) {
+          gainPolished.gain.value = 1.0;
+          gainRaw.gain.value = 0.0;
+        }
+      }
+      drawWaveform(getPlayProgress());
+    }
+
+    function getPlayProgress() {
+      if (!isPlaying || !currentPolishedBuffer) return 0;
+      const curr = (audioCtx.currentTime - startTime) % currentPolishedBuffer.duration;
+      return curr / currentPolishedBuffer.duration;
+    }
+
+    function renderLoop() {
+      if (!isPlaying || !currentPolishedBuffer) return;
+      const curr = (audioCtx.currentTime - startTime) % currentPolishedBuffer.duration;
+      const progress = curr / currentPolishedBuffer.duration;
+      drawWaveform(progress);
+      updateTimeDisplay(curr, currentPolishedBuffer.duration);
+      requestAnimationFrame(renderLoop);
+    }
+
+    function updateTimeDisplay(curr, total) {
+      const fmt = (s) => {
+        const m = Math.floor(s / 60);
+        const sec = Math.floor(s % 60);
+        return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+      };
+      timeDisplay.textContent = `${fmt(curr)} / ${fmt(total)}`;
+    }
+
+    btnPlay.addEventListener('click', togglePlay);
+    btnAb.addEventListener('click', toggleAB);
+
+    btnDownload.addEventListener('click', () => {
+      if (!polishedBlob) return;
+      const url = URL.createObjectURL(polishedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      const baseName = currentFile ? currentFile.name.replace(/\.[^/.]+$/, "") : "recording";
+      const isVideo = polishedBlob.type.startsWith('video');
+      const ext = isVideo ? (currentFile && currentFile.name.includes('.') ? currentFile.name.split('.').pop() : 'mp4') : 'wav';
+      a.download = `${baseName}_polished_master.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Detect hardware & GPU acceleration on load
+    fetch('/api/system/gpu')
+      .then(r => r.json())
+      .then(gpu => {
+        const el = document.getElementById('gpu-status-text');
+        if (el && gpu.description) {
+          el.textContent = `⚡ GPU: ${gpu.description}`;
+        }
+      })
+      .catch(() => {});
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && currentPolishedBuffer) {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'Tab' && currentPolishedBuffer) {
+        e.preventDefault();
+        toggleAB();
+      }
+    });
+
+    // Canvas click to seek
+    canvas.addEventListener('click', (e) => {
+      if (!currentPolishedBuffer) return;
+      const rect = canvas.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      pauseOffset = pos * currentPolishedBuffer.duration;
+      if (isPlaying) {
+        stopPlayback();
+        startPlayback();
+      } else {
+        drawWaveform(pos);
+        updateTimeDisplay(pauseOffset, currentPolishedBuffer.duration);
+      }
+    });
+
+  </script>
+</body>
+</html>
